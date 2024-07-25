@@ -21,20 +21,22 @@ public class TwitchWorker(TwitchAPI api, DiscordSocketClient client, Config cfg)
         monitor.SetChannelsById(cfg.TwitchChannels);
         monitor.OnStreamOnline += Monitor_OnStreamOnline;
         monitor.Start();
-        
+
         await Task.Delay(-1, stoppingToken);
     }
 
     private void Monitor_OnStreamOnline(object? sender, TwitchLib.Api.Services.Events.LiveStreamMonitor.OnStreamOnlineArgs e)
     {
         var tittle = e.Stream.UserName;
+
+        var guild = client.GetGuild(cfg.DiscordGuild);
+        if (guild == null) return;
+
         cfg.StreamChannels.ForEach(async id =>
         {
-            var channel = client.GetGuild(cfg.DiscordGuild).GetTextChannel(id);
+            var channel = guild.GetTextChannel(id);
             if (channel != null)
-            {
                 await channel.SendMessageAsync(tittle);
-            }
         });
     }
 }
